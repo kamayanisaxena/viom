@@ -1,0 +1,173 @@
+package excel;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class CompareExcel 
+{
+
+    public static void main(String[] args) 
+    {
+        try {
+            // get input excel files
+            FileInputStream excellFileAnalysis = new FileInputStream(new File("C:\\Users\\ksaxena\\Documents\\CompareExcel\\1711-5.xlsx"));
+         
+            // Create Workbook instance holding reference to .xlsx file
+            XSSFWorkbook workbookAnalysis = new XSSFWorkbook(excellFileAnalysis);
+ 
+            // Get first/desired sheet from the workbook
+            XSSFSheet sheetAnalysis = workbookAnalysis.getSheetAt(0);
+
+            
+            Iterator<Row> rowIterator = sheetAnalysis.iterator();
+//            int i = 0;
+            int totalmatches = 0;
+            int totalnonmatches = 0;
+            List<Integer> list = new ArrayList<Integer>();
+            while (rowIterator.hasNext()) 
+            {
+             Row row = rowIterator.next();
+                XSSFCell cell1 = (XSSFCell) row.getCell(0);
+                
+                if(cell1 != null){
+                 
+                 int rownum = cell1.getRowIndex();
+                 rownum++;
+                 System.out.println("\nCell Index No:"+ rownum +"|| Cell Value:" +(int)Math.round(cell1.getNumericCellValue()));
+                 
+                 
+                  Iterator<Row> rowIterator1 = sheetAnalysis.iterator();
+                     int flag=0, flag1=0, flag2=0;
+                   while (rowIterator1.hasNext()) 
+                   {
+                    Row row1 = rowIterator1.next();
+               
+                       XSSFCell cell2 = (XSSFCell) row1.getCell(1);
+                       if(cell2 != null && cell1.toString().equals(cell2.toString()))
+                       {
+                        int row1num = cell2.getRowIndex();
+                           row1num++;
+                        flag++;
+                        flag2++;
+                        System.out.println("Matched at cell Index:" + row1num);
+                       }
+                       else 
+                       {
+                        flag1++;
+                        
+                       }
+                   }
+                   
+                   if(flag2==0)
+                   {   totalnonmatches++;
+                    list.add((int)Math.round(cell1.getNumericCellValue()));
+                   }
+                   totalmatches+=flag;
+                   
+                    System.out.println("Total no of matches : "+flag);
+                    System.out.println("Total no of no-matches : "+flag1); 
+                }
+              }
+            
+            Iterator<Integer> it=list.iterator();
+            System.out.println("\nList of not matched values: \n");
+            while(it.hasNext()){
+             
+             System.out.println(it.next());
+            }
+            
+            System.out.println("\nGrand Total no of matches : "+totalmatches);
+            System.out.println("\nGrand Total no of not-matches : "+totalnonmatches);
+            excellFileAnalysis.close();
+                return;
+    } 
+    
+    catch (Exception e) 
+    {
+            e.printStackTrace();
+    }
+        
+      
+    
+}
+
+ 
+
+//Compare Two Cells
+public static boolean compareTwoCells(Cell cell1, Cell cell2) {
+    if((cell1 == null) && (cell2 == null)) {
+        return true;
+    } else if((cell1 == null) || (cell2 == null)) {
+        return false;
+    }
+    
+    boolean equalCells = false;
+    int type1 = cell1.getCellType();
+    int type2 = cell2.getCellType();
+    if (type1 == type2) {
+        if (cell1.getCellStyle().equals(cell2.getCellStyle())) {
+            // Compare cells based on its type
+            switch (cell1.getCellType()) {
+            case HSSFCell.CELL_TYPE_FORMULA:
+                if (cell1.getCellFormula().equals(cell2.getCellFormula())) {
+                    equalCells = true;
+                }
+                break;
+            case HSSFCell.CELL_TYPE_NUMERIC:
+                if (cell1.getNumericCellValue() == cell2
+                        .getNumericCellValue()) {
+                    equalCells = true;
+                }
+                break;
+            case HSSFCell.CELL_TYPE_STRING:
+                if (cell1.getStringCellValue().equals(cell2
+                        .getStringCellValue())) {
+                    equalCells = true;
+                }
+                break;
+            case HSSFCell.CELL_TYPE_BLANK:
+                if (cell2.getCellType() == HSSFCell.CELL_TYPE_BLANK) {
+                    equalCells = true;
+                }
+                break;
+            case HSSFCell.CELL_TYPE_BOOLEAN:
+                if (cell1.getBooleanCellValue() == cell2
+                        .getBooleanCellValue()) {
+                    equalCells = true;
+                }
+                break;
+            case HSSFCell.CELL_TYPE_ERROR:
+                if (cell1.getErrorCellValue() == cell2.getErrorCellValue()) {
+                    equalCells = true;
+                }
+                break;
+            default:
+                if (cell1.getStringCellValue().equals(
+                        cell2.getStringCellValue())) {
+                    equalCells = true;
+                }
+                break;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+    return equalCells;
+}
+}
